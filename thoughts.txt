@@ -7,7 +7,7 @@ first line should be number of ants, always numeric > 0, otherwise "error"
 ... next should be a block of lines format 'nnn xxx yyy', where n is the name of the room, x and y are coordinates,
 coordinates must be numeric otherwise error,
 
-use str_split, or maybe write a function similar to php/python 'explode',
+use str_split, or maybe write a function similar to php 'explode' or python 'split',
 the lines with room names and coordinates should have three words only, separated by space, otherwise "error" + coordinates must be numeric
 ..
 look out for comments .. use ft_strequ .. look for "##start" -> two hashtags, all lowercase and "##end" .. same;
