@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/04 20:03:10 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/05 02:21:44 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,40 @@ typedef struct	s_room
 	int		ant;
 	int		is_start;
 	int		is_end;
+	int		visited;
 	struct s_room	**links;
 }				t_room;
 
 typedef struct	s_ant
 {
 	int	number;
+	int	is_done;
 	t_room	*room;
 }				t_ant;
+
+int	ant_can_move(t_ant *ant)
+{
+	int	i;
+	t_room	**links;
+
+	if (ant == NULL)
+		return (-1);
+	if (ant->room == NULL)
+		return (-2);
+	if (ant->room->links == NULL)
+		return (-3);
+	if (ant->room->links[0] == NULL)
+		return (-4);
+	links = ant->room->links;
+	i = 0;
+	while (links[i] != NULL)
+	{
+		if (links[i]->has_ant == 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
 
 t_room	*create_room(char *name, int x, int y, int special)
 {
@@ -51,6 +77,7 @@ t_room	*create_room(char *name, int x, int y, int special)
 	room->ant = 0;
 	room->is_start = 0;
 	room->is_end = 0;
+	room->visited = 0;
 	if (special == LEM_START)
 		room->is_start = 1;
 	if (special == LEM_END)
@@ -69,6 +96,69 @@ int		count_rooms(t_room **antfarm)
 	while (antfarm[i] != NULL)
 		i++;
 	return (i);
+}
+
+void	clear_visited_flags(t_room **antfarm)
+{
+	int	i;
+
+	if (antfarm == NULL)
+		return ;
+	i = 0;
+	while (antfarm[i] != NULL)
+	{
+		antfarm[i]->visited = 0;
+		i++;
+	}
+}
+
+
+int	dfs_find_end(t_room *room, int *distance, int tmp, t_room **closest)
+{
+	int		i;
+	int		temp;
+
+	if (room->is_end == 1)
+	{
+		if (tmp < *distance)
+			*distance = tmp;
+		return (1);
+	}
+
+	i = 0;
+	temp = 0;
+	room->visited = 1;
+	while (room->links[i] != NULL)
+	{
+
+		if (room->links[i]->visited == 0)
+		{
+			if ((dfs_find_end(room->links[i], distance, ++tmp, closest)) == 1)
+			{	
+				(*closest) = room->links[i];
+				temp = 1;
+			}
+		}
+		i++;
+	}
+	return (temp);
+}
+
+int		distance_to_end(t_room **antfarm, t_room *room)
+{
+	int	distance;
+	t_room	*closest;
+
+	closest = NULL;
+	clear_visited_flags(antfarm);
+	distance = count_rooms(antfarm);
+	if ((dfs_find_end(room, &distance, 0, &closest)) == 1)
+	{
+		ft_printf("distance to end: [%d], room: [%s] \n", distance, closest->name);
+		return (distance);
+	}
+	else
+		return (-1);
 }
 
 int	add_room(t_room ***antfarm, t_room *room)
@@ -182,19 +272,23 @@ void	test1(void)
 	t_room	**antfarm;
 
 	antfarm = NULL;
-	a = create_room("0", 1, 0, LEM_START);	add_room(&antfarm, a);
-	b = create_room("1", 5, 0, LEM_END);	add_room(&antfarm, b);
-	c = create_room("2", 9, 0, 0);			add_room(&antfarm, c);
-	d = create_room("3", 13, 0, 0);			add_room(&antfarm, d);
+//pdf example 2
+	a = create_room("0", 1, 2, LEM_START);	add_room(&antfarm, a);
+	b = create_room("1", 9, 2, LEM_END);	add_room(&antfarm, b);
+	c = create_room("2", 5, 0, 0);			add_room(&antfarm, c);
+	d = create_room("3", 5, 4, 0);			add_room(&antfarm, d);
 
 	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
-	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
+	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
+//	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
 	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
+	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
+
+
+	int tmp = distance_to_end(antfarm, a);
 
 	print_antfarm(antfarm);
-
 	destroy_antfarm(antfarm);
-
 }
 
 
