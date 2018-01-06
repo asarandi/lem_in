@@ -1,3 +1,5 @@
+01-05-2017 ** try breadth-first-search for finding shortest path between two nodes
+
 use get_next_line to read stdin,
 implement a 'str_split' to make things easier,
 
