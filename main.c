@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/05 02:21:44 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/06 05:12:21 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct	s_room
 	int		is_start;
 	int		is_end;
 	int		visited;
+	struct s_room	*next;
 	struct s_room	**links;
 }				t_room;
 
@@ -78,6 +79,7 @@ t_room	*create_room(char *name, int x, int y, int special)
 	room->is_start = 0;
 	room->is_end = 0;
 	room->visited = 0;
+	room->next = NULL;
 	if (special == LEM_START)
 		room->is_start = 1;
 	if (special == LEM_END)
@@ -98,7 +100,7 @@ int		count_rooms(t_room **antfarm)
 	return (i);
 }
 
-void	clear_visited_flags(t_room **antfarm)
+void	clear_room_flags(t_room **antfarm)
 {
 	int	i;
 
@@ -107,10 +109,117 @@ void	clear_visited_flags(t_room **antfarm)
 	i = 0;
 	while (antfarm[i] != NULL)
 	{
+		antfarm[i]->next = NULL;
 		antfarm[i]->visited = 0;
 		i++;
 	}
 }
+
+
+void	bfs_enqueue(t_room *root, t_room *next)
+{
+	while (root->next != NULL)
+	{
+		root = root->next;
+	}
+	root->next = next;
+	next->next = NULL;
+}
+
+void	bfs_dequeue(t_room **root)
+{
+	(*root) = (*root)->next;
+}
+
+int		bfs_has_unvisited(t_room *room)
+{
+	int	i;
+
+	i = 0;
+	while (room->links[i] != NULL)
+	{
+		if (room->links[i]->visited == 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+int		bfs_is_enqueued(t_room *queue, t_room *search)
+{
+	while (queue != NULL)
+	{
+		if (queue == search)
+			return (1);
+		queue = queue->next;
+	}
+	return (0);
+}
+
+t_room	*bfs_closest(t_room **antfarm, t_room *queue, t_room *search)
+{
+	int		i;
+
+	clear_room_flags(antfarm);
+	while (queue != NULL)
+	{
+		queue->visited = 1;
+		i = 0;
+		while (queue->links[i] != NULL)
+		{
+			if (queue->links[i] == search)
+				return (queue);
+			if (queue->links[i]->visited == 0)
+			{
+				if (bfs_is_enqueued(queue, queue->links[i]) == 0)
+					bfs_enqueue(queue, queue->links[i]);
+			}
+			i++;
+		}
+		bfs_dequeue(&queue);
+	}
+	return (NULL);
+}
+
+
+t_room	*find_end_room(t_room **antfarm)
+{
+	int i = 0;
+	while (antfarm[i] != NULL)
+	{
+		if (antfarm[i]->is_end == 1)
+			return (antfarm[i]);
+		i++;
+	}
+	return (NULL);
+}
+
+int		is_direct_link(t_room *room, t_room *search)
+{
+	int	i;
+
+	i = 0;
+	while (room->links[i] != NULL)
+	{
+		if (room->links[i] == search)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+t_room *bfs_next(t_room **antfarm, t_room *start)
+{
+	t_room	*destination;
+
+	destination = find_end_room(antfarm);
+	while (is_direct_link(start, destination) == 0)
+	{
+		destination = bfs_closest(antfarm, start, destination);
+	}
+	return (destination);
+}
+
 
 
 int	dfs_find_end(t_room *room, int *distance, int tmp, t_room **closest)
@@ -150,7 +259,7 @@ int		distance_to_end(t_room **antfarm, t_room *room)
 	t_room	*closest;
 
 	closest = NULL;
-	clear_visited_flags(antfarm);
+	clear_room_flags(antfarm);
 	distance = count_rooms(antfarm);
 	if ((dfs_find_end(room, &distance, 0, &closest)) == 1)
 	{
@@ -280,12 +389,15 @@ void	test1(void)
 
 	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
 	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
-//	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
+	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
 	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
 	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
 
 
 	int tmp = distance_to_end(antfarm, a);
+
+	t_room *next = bfs_next(antfarm, a);
+
 
 	print_antfarm(antfarm);
 	destroy_antfarm(antfarm);
