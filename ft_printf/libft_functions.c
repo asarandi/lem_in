@@ -27,7 +27,7 @@ char	*ft_strtoupper(char *s)
 	}
 	return (s);
 }
-
+/*
 size_t	ft_strlen(const char *s)
 {
 	int i;
@@ -37,7 +37,7 @@ size_t	ft_strlen(const char *s)
 		i++;
 	return (i);
 }
-
+*/
 char	*ft_strcpy(char *dst, const char *src)
 {
 	int	i;
@@ -51,7 +51,7 @@ char	*ft_strcpy(char *dst, const char *src)
 	dst[i] = 0;
 	return (dst);
 }
-
+/*
 void	*ft_memalloc(size_t size)
 {
 	unsigned char	*p;
@@ -67,7 +67,7 @@ void	*ft_memalloc(size_t size)
 	}
 	return (p);
 }
-
+*/
 char	*ft_strdup(const char *s1)
 {
 	char	*mem;

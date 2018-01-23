@@ -55,7 +55,7 @@ int		double_check_nan(double *d, t_placeholder *ph)
 		(*ph).char_count = 3;
 		return (1);
 	}
-	if ((*d == (double)1 / 0) || (*d == (double)-1 / 0))
+	if ((*d == (double)1 / (double)0) || (*d == (double)-1 / (double)0))
 	{
 		(*ph).float_suffix = ft_strdup("inf");
 		(*ph).float_prefix = ft_memalloc(1);
