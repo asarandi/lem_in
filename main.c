@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/22 22:57:55 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/23 14:45:13 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -396,9 +396,9 @@ void	test1(void)
 	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
 
 
-	int tmp = distance_to_end(antfarm, a);
+//	int tmp = distance_to_end(antfarm, a);
 
-	t_room *next = bfs_next(antfarm, a);
+//	t_room *next = bfs_next(antfarm, a);
 
 
 	print_antfarm(antfarm);
