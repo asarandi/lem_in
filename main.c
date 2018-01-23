@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/06 05:12:21 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/22 22:57:55 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ typedef struct	s_ant
 	int	is_done;
 	t_room	*room;
 }				t_ant;
+
+static int	g_verbose;
 
 int	ant_can_move(t_ant *ant)
 {
@@ -497,10 +499,15 @@ void	get_input(void)
 	
 }
 
-int	main(void)
+char	*e_noinput	= "error: no input file\n";
+char	*e_badsize	= "errpr: bad file size\n";
+char	*e_malloc	= "error: malloc failed\n";
+
+int	main(int ac, char **av)
 {
+	if ((ac == 2) && (ft_strequ(av[1], "-v")))
+		g_verbose = 1;
 	get_input();
-	ft_printf("lemmy lemmy lemmie lem\n\n");
 	test1();
 	return (0);
 }

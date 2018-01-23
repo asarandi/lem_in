@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/04 00:43:31 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/04 01:10:56 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/22 22:43:01 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,6 @@ typedef	struct		s_gnl
 	struct s_gnl	*next;
 }					t_gnl;
 
+int		get_next_line(const int fd, char **line);
 
 #endif
