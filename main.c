@@ -6,19 +6,20 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/23 14:45:13 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/23 20:12:24 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lemin.h"
 
-#define	LEM_ANTS	0
-#define	LEM_START	1
-#define	LEM_END		2
-#define	LEM_ROOM	3
-#define	LEM_LINK	4
-#define	LEM_COMMENT	5
-#define	LEM_UNKNOWN	6
+#define	LEM_ANTS	1
+#define	LEM_START	2
+#define	LEM_END		3
+#define	LEM_ROOM	4
+#define	LEM_LINK	5
+#define	LEM_COMMENT	6
+#define	LEM_UNKNOWN	7
+#define LEM_BADNAME 8
 
 typedef struct	s_room
 {
@@ -374,38 +375,6 @@ void	print_antfarm(t_room **antfarm)
 	}
 }
 
-void	test1(void)
-{
-	t_room	*a;
-	t_room	*b;
-	t_room	*c;
-	t_room	*d;
-	t_room	**antfarm;
-
-	antfarm = NULL;
-//pdf example 2
-	a = create_room("0", 1, 2, LEM_START);	add_room(&antfarm, a);
-	b = create_room("1", 9, 2, LEM_END);	add_room(&antfarm, b);
-	c = create_room("2", 5, 0, 0);			add_room(&antfarm, c);
-	d = create_room("3", 5, 4, 0);			add_room(&antfarm, d);
-
-	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
-	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
-	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
-	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
-	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
-
-
-//	int tmp = distance_to_end(antfarm, a);
-
-//	t_room *next = bfs_next(antfarm, a);
-
-
-	print_antfarm(antfarm);
-	destroy_antfarm(antfarm);
-}
-
-
 
 void	free_char_array(char **array)
 {
@@ -466,7 +435,13 @@ int		get_input_type(char *str)
 	result = LEM_UNKNOWN;
 	if ((array = ft_strsplit(str, ' ')) == NULL)
 		return (LEM_UNKNOWN);
-	if ((char_array_count_elements(array)) == 1)
+
+
+	if ((array[0][0] == '#') && (array[0][1] != '#'))
+	{
+			result = LEM_COMMENT;
+	}
+	else if ((char_array_count_elements(array)) == 1)
 	{
 		if (string_is_integer(array[0]))
 			result = LEM_ANTS;
@@ -488,16 +463,281 @@ int		get_input_type(char *str)
 	else if (char_array_count_elements(array) == 3)
 	{
 		if ((string_is_integer(array[1])) && (string_is_integer(array[2])))
+		{
 			result = LEM_ROOM;
+			if ((array[0][0] == 'L') || (array[0][0] == '#'))
+				result = LEM_BADNAME;// room names should never start with 'L' or '#'
+		}
 	}
 	free_char_array(array);
 	return (result);
 }
 
+
+void	quit(char *membuf)
+{
+	//if verbose then show error, otherwise just quit
+	if (membuf != NULL)
+		free(membuf);
+	ft_printf("ERROR\n");
+	perror(strerror(errno));
+	exit (0);
+}
+
+
+char	*stdin_read_eof(int *count)
+{
+	char	*buffer;
+	char	*newbuf;
+	ssize_t			r;
+
+	if ((buffer = ft_memalloc(1024)) == NULL)
+		quit(NULL);
+	*count = 0;
+	r = 1;
+	while (r != 0)
+	{
+		if ((r = read(0, &buffer[*count], 1024 - (*count % 1024))) == -1)
+			quit(buffer);
+		*count += r;
+		if ((*count) && (*count % 1024 == 0))
+		{
+			if ((newbuf = ft_memalloc(*count + 1024)) == NULL)
+				quit(buffer);
+			ft_memcpy(newbuf, buffer, *count);
+			free(buffer);
+			buffer = newbuf;
+			r = 1;
+		}
+	}
+	return (buffer);
+}
+
+
+
+
+void	input_error(char *message, char **string_array, int index)
+{
+	//if verbose
+	ft_printf("{white2}line %d: %s{eoc}\n", index + 1, string_array[index]);
+	ft_printf("{red}ERROR: %s{eoc}\n", message);
+	return ;
+}
+
+
+struct	input_counts
+{
+	int	unknown;
+	int	ants;
+	int	start;
+	int	end;
+	int	comment;
+	int	link;
+	int	room;
+};
+
+
 void	get_input(void)
 {
-	
+	int						input_size;
+	char					*input;
+	char					**string_array;
+	int						i;
+	int						*input_type;
+	int						lines;
+	struct	input_counts	ip;
+	ip.unknown = 0;
+	ip.ants = 0;
+	ip.start = 0;
+	ip.end = 0;
+	ip.comment = 0;
+	ip.link = 0;
+	ip.room = 0;
+
+
+	input = stdin_read_eof(&input_size);
+	string_array = ft_strsplit(input, '\n');
+	lines = char_array_count_elements(string_array);
+	input_type = ft_memalloc((lines + 1) * sizeof(int));
+
+	i = 0;
+	while (string_array[i] != NULL)
+	{
+		input_type[i] = get_input_type(string_array[i]);
+		i++;
+	}
+
+
+	i = 0;
+	while (i < lines)
+	{
+		if (input_type[i] == LEM_ANTS)
+			ip.ants += 1;
+		else if (input_type[i] == LEM_START)
+		{
+			ip.start += 1;
+			if (input_type[i + 1] != LEM_ROOM)
+			{
+				input_error("##start command must be followed by a room name", string_array, i + 1);
+				free_char_array(string_array);
+				free(input_type);
+				free(input);
+				exit(0);
+			}
+		}
+		else if (input_type[i] == LEM_END)
+		{
+			ip.end += 1;
+			if (input_type[i + 1] != LEM_ROOM)
+			{
+				input_error("##end command must be followed by a room name", string_array, i + 1);
+				free_char_array(string_array);
+				free(input_type);
+				free(input);
+				exit(0);
+			}
+		}
+
+		else if (input_type[i] == LEM_COMMENT)
+			ip.comment += 1;
+		else if (input_type[i] == LEM_LINK)
+			ip.link += 1;
+		else if (input_type[i] == LEM_ROOM)
+			ip.room += 1;
+		else if (input_type[i] == LEM_BADNAME)
+		{
+			input_error("room names should not start with 'L' or '#'", string_array, i);
+			free_char_array(string_array);
+			free(input_type);
+			free(input);
+			exit(0);
+		}
+
+		else // (input_type[i] == LEM_UNKNOWN)
+		{
+			//if verbose
+			input_error("could not parse", string_array, i);
+			free_char_array(string_array);
+			free(input_type);
+			free(input);
+			exit(0);
+		}
+		i++;
+	}
+	if (ip.ants == 0)
+	{
+		input_error("input is missing 'number of ants'", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+	else if (ip.ants > 1)
+	{
+		input_error("multiple 'number of ants' lines", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+
+	if (ip.start == 0)
+	{
+		input_error("input is missing '##start' command", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+	else if (ip.start > 1)
+	{
+		input_error("multiple '##start' commands", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+
+	if (ip.end == 0)
+	{
+		input_error("input is missing '##end' command", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+	else if (ip.end > 1)
+	{
+		input_error("multiple '##end' commands", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+
+
+	if (ip.room < 2) //technically impossible because #start and #end are rooms //spaghetti code
+	{
+		input_error("less than 2 rooms", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+	else if (ip.link < 1)
+	{
+		input_error("no links between rooms", string_array, i);
+		free_char_array(string_array);
+		free(input_type);
+		free(input);
+		exit(0);
+	}
+
+
+
 }
+
+
+void	test1(void)
+{
+	t_room	*a;
+	t_room	*b;
+	t_room	*c;
+	t_room	*d;
+	t_room	**antfarm;
+
+	antfarm = NULL;
+//pdf example 2
+	a = create_room("0", 1, 2, LEM_START);	add_room(&antfarm, a);
+	b = create_room("1", 9, 2, LEM_END);	add_room(&antfarm, b);
+	c = create_room("2", 5, 0, 0);			add_room(&antfarm, c);
+	d = create_room("3", 5, 4, 0);			add_room(&antfarm, d);
+
+	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
+	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
+	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
+	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
+	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
+
+
+//	int tmp = distance_to_end(antfarm, a);
+
+//	t_room *next = bfs_next(antfarm, a);
+
+
+	print_antfarm(antfarm);
+	destroy_antfarm(antfarm);
+}
+
+
+
+//
+//implement room name validation for links
+//check for duplicate room names
+//check for duplicate links?
+//throw error when room name has dashes?
+//
+	
 
 char	*e_noinput	= "error: no input file\n";
 char	*e_badsize	= "errpr: bad file size\n";
