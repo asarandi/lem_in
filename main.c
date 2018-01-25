@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:51:25 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 01:17:30 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,18 +38,6 @@ int	ant_can_move(t_ant *ant)
 }
 
 
-int		count_rooms(t_room **antfarm)
-{
-	int	i;
-
-	if (antfarm == NULL)
-		return (0);
-	i = 0;
-	while (antfarm[i] != NULL)
-		i++;
-	return (i);
-}
-
 void	clear_room_flags(t_room **antfarm)
 {
 	int	i;
@@ -77,40 +65,6 @@ int		is_direct_link(t_room *room, t_room *search)
 		i++;
 	}
 	return (0);
-}
-
-t_room	*find_room(t_room **antfarm, char *roomname)
-{
-	int	i;
-
-	if (antfarm == NULL)
-		return (NULL);
-	i = 0;
-	while (antfarm[i] != NULL)
-	{
-		if (ft_strequ(antfarm[i]->name, roomname))
-				return (antfarm[i]);
-		i++;
-	}
-	return (NULL);
-}
-
-
-void	destroy_antfarm(t_room **antfarm)
-{
-	int	i;
-
-	if (antfarm == NULL)
-		return ;
-	i = 0;
-	while (antfarm[i] != NULL)
-	{
-		if (antfarm[i]->links != NULL)
-			free(antfarm[i]->links);
-		free(antfarm[i]);
-		i++;
-	}
-	free(antfarm);
 }
 
 
@@ -152,7 +106,7 @@ void	print_antfarm(t_room **antfarm)
 
 void	input_error(char *message, t_lemin *a, int index)
 {
-	if (a->verbose == 1)
+	if (a->verbose)
 	{
 		ft_printf("{white2}line %d: %s{eoc}\n", index + 1, a->string_array[index]);
 		ft_printf("{red}ERROR: %s{eoc}\n", message);
@@ -270,11 +224,11 @@ void	test1(void)
 	c = create_room("2", 5, 0, 0);			add_room(&antfarm, c);
 	d = create_room("3", 5, 4, 0);			add_room(&antfarm, d);
 
-	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
-	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
-	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
-	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
-	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
+//	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
+//	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
+//	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
+//	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
+//	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
 
 
 //	int tmp = distance_to_end(antfarm, a);
@@ -283,7 +237,7 @@ void	test1(void)
 
 
 	print_antfarm(antfarm);
-	destroy_antfarm(antfarm);
+//	destroy_antfarm(antfarm);
 }
 
 void	create_room_array(t_lemin	*a)
@@ -311,28 +265,37 @@ void	create_room_array(t_lemin	*a)
 			room = ft_strsplit(a->string_array[i], ' ');
 			a->rooms[j] = create_room(room[0], ft_atoi(room[1]), ft_atoi(room[2]), flag);
 			a->rooms[j]->strings = room;
+			j++;
 		}
 		i++;
 	}
 	a->rooms[j] = NULL;
 }
 
-void	create_room_links(t_lemin *a)
+void	create_link_array(t_lemin *a)
 {
-	int	i;
+	int		i;
 	char	**link;
+	int		flag;
 
 	i = 0;
 	while (i < a->lines)
 	{
 		if (a->input_type[i] == LEM_LINK)
 		{
-			link = ft_strsplit(a->string_array[i], ' ');
-
-
+			flag = 0;
+			link = ft_strsplit(a->string_array[i], '-');
+			if (add_link(a, link[0], link[1]) == -1)
+				flag = 1;
 			free_char_array(link);
+			if (flag == 1)
+			{
+				destroy_antfarm(a);
+				exit(0);
+			}
 
 		}
+		i++;
 	}
 }
 
@@ -360,6 +323,10 @@ int	main(int ac, char **av)
 	get_input(a);
 	check_duplicate_room_names(a);
 	create_room_array(a);
-	test1();
+	create_link_array(a);
+	print_antfarm(a->rooms);
+	destroy_antfarm(a);
+
+//	test1();
 	return (0);
 }

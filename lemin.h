@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/04 00:43:31 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:47:10 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 00:58:51 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ int		ft_istrcmp(char *str1, char *str2);
 int		get_input_type(char *str);
 int		is_direct_link(t_room *room, t_room *search);
 int		string_is_integer(char *str);
-int		add_link(t_room ***antfarm, char *roomname, char *linkname);
+int		add_link(t_lemin *a, char *roomname, char *linkname);
 int		add_room(t_room ***antfarm, t_room *room);
 int		ant_can_move(t_ant *ant);
 int		dfs_find_end(t_room *room, int *distance, int tmp, t_room **closest);
@@ -101,7 +101,7 @@ void	clear_room_flags(t_room **antfarm);
 void	compare_room_names(t_lemin *a, int i, int j);
 void	create_room_array(t_lemin	*a);
 void	create_room_links(t_lemin *a);
-void	destroy_antfarm(t_room **antfarm);
+void	destroy_antfarm(t_lemin *a);
 void	free_char_array(char **array);
 void	get_input(t_lemin *a);
 void	get_input_counts(t_lemin *a, int i);

@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+*.swp
+debug
 
 # Object files
 *.o

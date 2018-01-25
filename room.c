@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:36:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:38:28 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 01:05:38 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ t_room	*create_room(char *name, int x, int y, int special)
 
 	if ((room = ft_memalloc(sizeof(t_room))) == NULL)
 		return (NULL);
+	room->strings = NULL;
 	room->name = name;
 	room->x = x;
 	room->y = y;
@@ -35,6 +36,19 @@ t_room	*create_room(char *name, int x, int y, int special)
 	return (room);
 }
 
+int		count_rooms(t_room **antfarm)
+{
+	int	i;
+
+	if (antfarm == NULL)
+		return (0);
+	i = 0;
+	while (antfarm[i] != NULL)
+		i++;
+	return (i);
+}
+
+
 int	add_room(t_room ***antfarm, t_room *room)
 {
 	int	count;
@@ -44,7 +58,7 @@ int	add_room(t_room ***antfarm, t_room *room)
 	count = count_rooms(*antfarm);
 	new_antfarm = ft_memalloc((count + 2) * sizeof(t_room *));
 	if (new_antfarm == NULL)
-		return (0);
+		return (-1);
 	i = 0;
 	while (i < count)
 	{
@@ -59,16 +73,81 @@ int	add_room(t_room ***antfarm, t_room *room)
 	return (1);
 }
 
-int	add_link(t_room ***antfarm, char *roomname, char *linkname)
+t_room	*find_room(t_room **antfarm, char *roomname)
+{
+	int	i;
+
+	if (antfarm == NULL)
+		return (NULL);
+	i = 0;
+	while (antfarm[i] != NULL)
+	{
+		if (ft_strequ(antfarm[i]->name, roomname))
+				return (antfarm[i]);
+		i++;
+	}
+	return (NULL);
+}
+
+
+
+void	room_not_found(t_lemin *a, char *linkname)
+{
+	if (a->verbose)
+	{
+		ft_printf("{red}ERROR: error while creating links map{eoc}\n");
+		ft_printf("{red}room name '%s' not found{eoc}\n");
+	}
+	else
+		ft_printf("ERROR\n");
+}
+
+int	add_link(t_lemin *a, char *linkname1, char *linkname2)
 {
 	t_room	*room1;
 	t_room	*room2;
 
-	room1 = find_room(*antfarm, roomname);
-	room2 = find_room(*antfarm, linkname);
-	if ((room1 == NULL) || (room2 == NULL))
+	room1 = find_room(a->rooms, linkname1);
+	if (room1 == NULL)
+	{
+		room_not_found(a, linkname1);
 		return (-1);
-
-	return (add_room(&room1->links, room2));
+	}
+	room2 = find_room(a->rooms, linkname2);
+	if (room2 == NULL)
+	{
+		room_not_found(a, linkname2);
+		return (-1);
+	}
+	if (add_room(&room1->links, room2) == -1)	//add room2 to the list of links of room1
+		return (-1);
+	return (add_room(&room2->links, room1));	//add room1 to the list of links for room2
 }
 
+void	destroy_antfarm(t_lemin *a)
+{
+	int		i;
+
+	i = 0;
+	if (a->ants != NULL)
+		while (a->ants[i] != NULL)
+		{
+			free(a->ants[i]);
+			i++;
+		}
+	i = 0;
+	if (a->rooms != NULL)
+		while (a->rooms[i] != NULL)
+		{
+			if (a->rooms[i]->strings != NULL)
+				free_char_array(a->rooms[i]->strings);
+			free(a->rooms[i]->links);
+			free(a->rooms[i]);
+			a->rooms[i] = NULL;
+			i++;
+		}
+	free_char_array(a->string_array);	//array of char ** from str_split
+	free(a->input_type);	// array of ints for each line of raw input
+	free(a->raw_input);
+	free(a);
+}
