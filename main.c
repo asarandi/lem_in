@@ -6,43 +6,12 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/23 20:12:24 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/24 23:51:25 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lemin.h"
 
-#define	LEM_ANTS	1
-#define	LEM_START	2
-#define	LEM_END		3
-#define	LEM_ROOM	4
-#define	LEM_LINK	5
-#define	LEM_COMMENT	6
-#define	LEM_UNKNOWN	7
-#define LEM_BADNAME 8
-
-typedef struct	s_room
-{
-	char	*name;
-	int		x;
-	int		y;
-	int		has_ant;
-	int		ant;
-	int		is_start;
-	int		is_end;
-	int		visited;
-	struct s_room	*next;
-	struct s_room	**links;
-}				t_room;
-
-typedef struct	s_ant
-{
-	int	number;
-	int	is_done;
-	t_room	*room;
-}				t_ant;
-
-static int	g_verbose;
 
 int	ant_can_move(t_ant *ant)
 {
@@ -68,28 +37,6 @@ int	ant_can_move(t_ant *ant)
 	return (0);
 }
 
-t_room	*create_room(char *name, int x, int y, int special)
-{
-	t_room	*room;
-
-	if ((room = ft_memalloc(sizeof(t_room))) == NULL)
-		return (NULL);
-	room->name = name;
-	room->x = x;
-	room->y = y;
-	room->has_ant = 0;
-	room->ant = 0;
-	room->is_start = 0;
-	room->is_end = 0;
-	room->visited = 0;
-	room->next = NULL;
-	if (special == LEM_START)
-		room->is_start = 1;
-	if (special == LEM_END)
-		room->is_end = 1;
-	room->links = NULL;
-	return (room);
-}
 
 int		count_rooms(t_room **antfarm)
 {
@@ -118,85 +65,6 @@ void	clear_room_flags(t_room **antfarm)
 	}
 }
 
-
-void	bfs_enqueue(t_room *root, t_room *next)
-{
-	while (root->next != NULL)
-	{
-		root = root->next;
-	}
-	root->next = next;
-	next->next = NULL;
-}
-
-void	bfs_dequeue(t_room **root)
-{
-	(*root) = (*root)->next;
-}
-
-int		bfs_has_unvisited(t_room *room)
-{
-	int	i;
-
-	i = 0;
-	while (room->links[i] != NULL)
-	{
-		if (room->links[i]->visited == 0)
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-int		bfs_is_enqueued(t_room *queue, t_room *search)
-{
-	while (queue != NULL)
-	{
-		if (queue == search)
-			return (1);
-		queue = queue->next;
-	}
-	return (0);
-}
-
-t_room	*bfs_closest(t_room **antfarm, t_room *queue, t_room *search)
-{
-	int		i;
-
-	clear_room_flags(antfarm);
-	while (queue != NULL)
-	{
-		queue->visited = 1;
-		i = 0;
-		while (queue->links[i] != NULL)
-		{
-			if (queue->links[i] == search)
-				return (queue);
-			if (queue->links[i]->visited == 0)
-			{
-				if (bfs_is_enqueued(queue, queue->links[i]) == 0)
-					bfs_enqueue(queue, queue->links[i]);
-			}
-			i++;
-		}
-		bfs_dequeue(&queue);
-	}
-	return (NULL);
-}
-
-
-t_room	*find_end_room(t_room **antfarm)
-{
-	int i = 0;
-	while (antfarm[i] != NULL)
-	{
-		if (antfarm[i]->is_end == 1)
-			return (antfarm[i]);
-		i++;
-	}
-	return (NULL);
-}
-
 int		is_direct_link(t_room *room, t_room *search)
 {
 	int	i;
@@ -209,92 +77,6 @@ int		is_direct_link(t_room *room, t_room *search)
 		i++;
 	}
 	return (0);
-}
-
-t_room *bfs_next(t_room **antfarm, t_room *start)
-{
-	t_room	*destination;
-
-	destination = find_end_room(antfarm);
-	while (is_direct_link(start, destination) == 0)
-	{
-		destination = bfs_closest(antfarm, start, destination);
-	}
-	return (destination);
-}
-
-
-
-int	dfs_find_end(t_room *room, int *distance, int tmp, t_room **closest)
-{
-	int		i;
-	int		temp;
-
-	if (room->is_end == 1)
-	{
-		if (tmp < *distance)
-			*distance = tmp;
-		return (1);
-	}
-
-	i = 0;
-	temp = 0;
-	room->visited = 1;
-	while (room->links[i] != NULL)
-	{
-
-		if (room->links[i]->visited == 0)
-		{
-			if ((dfs_find_end(room->links[i], distance, ++tmp, closest)) == 1)
-			{	
-				(*closest) = room->links[i];
-				temp = 1;
-			}
-		}
-		i++;
-	}
-	return (temp);
-}
-
-int		distance_to_end(t_room **antfarm, t_room *room)
-{
-	int	distance;
-	t_room	*closest;
-
-	closest = NULL;
-	clear_room_flags(antfarm);
-	distance = count_rooms(antfarm);
-	if ((dfs_find_end(room, &distance, 0, &closest)) == 1)
-	{
-		ft_printf("distance to end: [%d], room: [%s] \n", distance, closest->name);
-		return (distance);
-	}
-	else
-		return (-1);
-}
-
-int	add_room(t_room ***antfarm, t_room *room)
-{
-	int	count;
-	int	i;
-	t_room	**new_antfarm;
-
-	count = count_rooms(*antfarm);
-	new_antfarm = ft_memalloc((count + 2) * sizeof(t_room *));
-	if (new_antfarm == NULL)
-		return (0);
-	i = 0;
-	while (i < count)
-	{
-		new_antfarm[i] = (*antfarm)[i];
-		i++;
-	}
-	new_antfarm[i++] = room;
-	new_antfarm[i] = NULL;
-	if (*antfarm != NULL)
-		free(*antfarm);
-	(*antfarm) = new_antfarm;
-	return (1);
 }
 
 t_room	*find_room(t_room **antfarm, char *roomname)
@@ -313,18 +95,6 @@ t_room	*find_room(t_room **antfarm, char *roomname)
 	return (NULL);
 }
 
-int	add_link(t_room ***antfarm, char *roomname, char *linkname)
-{
-	t_room	*room1;
-	t_room	*room2;
-
-	room1 = find_room(*antfarm, roomname);
-	room2 = find_room(*antfarm, linkname);
-	if ((room1 == NULL) || (room2 == NULL))
-		return (-1);
-
-	return (add_room(&room1->links, room2));
-}
 
 void	destroy_antfarm(t_room **antfarm)
 {
@@ -376,325 +146,112 @@ void	print_antfarm(t_room **antfarm)
 }
 
 
-void	free_char_array(char **array)
-{
-	int	i;
 
-	if (array == NULL)
-		return ;
-	i = 0;
-	while (array[i] != NULL)
+
+
+
+void	input_error(char *message, t_lemin *a, int index)
+{
+	if (a->verbose == 1)
 	{
-		free(array[i]);
-		i++;
+		ft_printf("{white2}line %d: %s{eoc}\n", index + 1, a->string_array[index]);
+		ft_printf("{red}ERROR: %s{eoc}\n", message);
 	}
-	free(array);
+	else
+		ft_printf("ERROR\n");
+	free_char_array(a->string_array);	//array of char ** from str_split
+	free(a->input_type);	// array of ints for each line of raw input
+	free(a->raw_input);
+	exit(0);
 	return ;
 }
 
-int		char_array_count_elements(char **array)
+
+
+void	get_input(t_lemin *a)
 {
-	int	i;
+	int i;
+
+	a->raw_input = stdin_read_eof(&a->raw_size);
+	a->string_array = ft_strsplit(a->raw_input, '\n');
+	a->lines = char_array_count_elements(a->string_array);
+	a->input_type = ft_memalloc((a->lines + 1) * sizeof(int));
 
 	i = 0;
-	if (array == NULL)
-		return (i);
-	while (array[i] != NULL)
-		i++;
-	return (i);
-}
-
-int		string_is_integer(char *str)
-{
-	int	i;
-	int	result;
-
-	i = 0;
-	result = 0;
-	if (str[i] == '-')
-		i++;
-	while (str[i])
+	while (a->string_array[i] != NULL)
 	{
-		if (!is_digit(str[i]))
-		{
-			result = 0;
-			break ;
-		}
-		result = 1;
+		a->input_type[i] = get_input_type(a->string_array[i]);
 		i++;
 	}
-	return (result);
+	i = 0;
+	clear_input_counts(a);	// use ft_memalloc because it sets memory to 0
+	get_input_counts(a, i);
+	check_input_counts(a, i);
 }
 
-int		get_input_type(char *str)
+//////////////
+
+
+
+void	room_name_has_dashes(t_lemin *a, int index, char **a1, char **a2)
 {
-	char	**array;
-	char	**links;
+	if (a1 != NULL)
+		free_char_array(a1);
+	if (a2 != NULL)
+		free_char_array(a2);
+	input_error("dashes are not allowed in room names", a, index);
+	return ;
+}
+
+
+void	compare_room_names(t_lemin *a, int i, int j)
+{
+	char	**room1;
+	char	**room2;
 	int		result;
 
-	result = LEM_UNKNOWN;
-	if ((array = ft_strsplit(str, ' ')) == NULL)
-		return (LEM_UNKNOWN);
-
-
-	if ((array[0][0] == '#') && (array[0][1] != '#'))
+	result = 0;
+	room1 = ft_strsplit(a->string_array[i], ' ');
+	if (ft_strchr(room1[0], '-') != NULL)
+		room_name_has_dashes(a, i, room1, NULL);
+	room2 = ft_strsplit(a->string_array[j], ' ');
+	if (ft_strchr(room2[0], '-') != NULL)
+		room_name_has_dashes(a, j, room1, room2);
+	if (ft_istrequ(room1[0], room2[0]) == 1)
 	{
-			result = LEM_COMMENT;
+		result = 1;
+		ft_printf("{white2}line %d: %s{eoc}\n", i, a->string_array[i]);
 	}
-	else if ((char_array_count_elements(array)) == 1)
-	{
-		if (string_is_integer(array[0]))
-			result = LEM_ANTS;
-		else if (ft_strequ(array[0], "##start"))
-			result = LEM_START;
-		else if (ft_strequ(array[0], "##end"))
-			result = LEM_END;
-		else if ((array[0][0] == '#') && (array[0][1] != '#'))
-			result = LEM_COMMENT;
-		else
-		{
-			links = ft_strsplit(array[0], '-');
-			if ((char_array_count_elements(links)) == 2)
-				result = LEM_LINK;
-			if (links != NULL)
-				free_char_array(links);
-		}
-	}
-	else if (char_array_count_elements(array) == 3)
-	{
-		if ((string_is_integer(array[1])) && (string_is_integer(array[2])))
-		{
-			result = LEM_ROOM;
-			if ((array[0][0] == 'L') || (array[0][0] == '#'))
-				result = LEM_BADNAME;// room names should never start with 'L' or '#'
-		}
-	}
-	free_char_array(array);
-	return (result);
-}
-
-
-void	quit(char *membuf)
-{
-	//if verbose then show error, otherwise just quit
-	if (membuf != NULL)
-		free(membuf);
-	ft_printf("ERROR\n");
-	perror(strerror(errno));
-	exit (0);
-}
-
-
-char	*stdin_read_eof(int *count)
-{
-	char	*buffer;
-	char	*newbuf;
-	ssize_t			r;
-
-	if ((buffer = ft_memalloc(1024)) == NULL)
-		quit(NULL);
-	*count = 0;
-	r = 1;
-	while (r != 0)
-	{
-		if ((r = read(0, &buffer[*count], 1024 - (*count % 1024))) == -1)
-			quit(buffer);
-		*count += r;
-		if ((*count) && (*count % 1024 == 0))
-		{
-			if ((newbuf = ft_memalloc(*count + 1024)) == NULL)
-				quit(buffer);
-			ft_memcpy(newbuf, buffer, *count);
-			free(buffer);
-			buffer = newbuf;
-			r = 1;
-		}
-	}
-	return (buffer);
-}
-
-
-
-
-void	input_error(char *message, char **string_array, int index)
-{
-	//if verbose
-	ft_printf("{white2}line %d: %s{eoc}\n", index + 1, string_array[index]);
-	ft_printf("{red}ERROR: %s{eoc}\n", message);
+	free_char_array(room1);
+	free_char_array(room2);
+	if (result == 1)
+		input_error("duplicate room names found", a, j);
 	return ;
 }
 
 
-struct	input_counts
+void	check_duplicate_room_names(t_lemin *a)
 {
-	int	unknown;
-	int	ants;
-	int	start;
-	int	end;
-	int	comment;
-	int	link;
-	int	room;
-};
-
-
-void	get_input(void)
-{
-	int						input_size;
-	char					*input;
-	char					**string_array;
-	int						i;
-	int						*input_type;
-	int						lines;
-	struct	input_counts	ip;
-	ip.unknown = 0;
-	ip.ants = 0;
-	ip.start = 0;
-	ip.end = 0;
-	ip.comment = 0;
-	ip.link = 0;
-	ip.room = 0;
-
-
-	input = stdin_read_eof(&input_size);
-	string_array = ft_strsplit(input, '\n');
-	lines = char_array_count_elements(string_array);
-	input_type = ft_memalloc((lines + 1) * sizeof(int));
+	int i;
+	int j;
 
 	i = 0;
-	while (string_array[i] != NULL)
+	while (i < a->lines - 1)
 	{
-		input_type[i] = get_input_type(string_array[i]);
-		i++;
-	}
-
-
-	i = 0;
-	while (i < lines)
-	{
-		if (input_type[i] == LEM_ANTS)
-			ip.ants += 1;
-		else if (input_type[i] == LEM_START)
+		if (a->input_type[i] == LEM_ROOM)
 		{
-			ip.start += 1;
-			if (input_type[i + 1] != LEM_ROOM)
+			j = i + 1;
+			while (j < a->lines)
 			{
-				input_error("##start command must be followed by a room name", string_array, i + 1);
-				free_char_array(string_array);
-				free(input_type);
-				free(input);
-				exit(0);
+				if (a->input_type[j] == LEM_ROOM)
+				{
+					compare_room_names(a, i, j);
+				}
+				j++;
 			}
-		}
-		else if (input_type[i] == LEM_END)
-		{
-			ip.end += 1;
-			if (input_type[i + 1] != LEM_ROOM)
-			{
-				input_error("##end command must be followed by a room name", string_array, i + 1);
-				free_char_array(string_array);
-				free(input_type);
-				free(input);
-				exit(0);
-			}
-		}
-
-		else if (input_type[i] == LEM_COMMENT)
-			ip.comment += 1;
-		else if (input_type[i] == LEM_LINK)
-			ip.link += 1;
-		else if (input_type[i] == LEM_ROOM)
-			ip.room += 1;
-		else if (input_type[i] == LEM_BADNAME)
-		{
-			input_error("room names should not start with 'L' or '#'", string_array, i);
-			free_char_array(string_array);
-			free(input_type);
-			free(input);
-			exit(0);
-		}
-
-		else // (input_type[i] == LEM_UNKNOWN)
-		{
-			//if verbose
-			input_error("could not parse", string_array, i);
-			free_char_array(string_array);
-			free(input_type);
-			free(input);
-			exit(0);
 		}
 		i++;
 	}
-	if (ip.ants == 0)
-	{
-		input_error("input is missing 'number of ants'", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-	else if (ip.ants > 1)
-	{
-		input_error("multiple 'number of ants' lines", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-
-	if (ip.start == 0)
-	{
-		input_error("input is missing '##start' command", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-	else if (ip.start > 1)
-	{
-		input_error("multiple '##start' commands", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-
-	if (ip.end == 0)
-	{
-		input_error("input is missing '##end' command", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-	else if (ip.end > 1)
-	{
-		input_error("multiple '##end' commands", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-
-
-	if (ip.room < 2) //technically impossible because #start and #end are rooms //spaghetti code
-	{
-		input_error("less than 2 rooms", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-	else if (ip.link < 1)
-	{
-		input_error("no links between rooms", string_array, i);
-		free_char_array(string_array);
-		free(input_type);
-		free(input);
-		exit(0);
-	}
-
-
-
 }
 
 
@@ -729,13 +286,61 @@ void	test1(void)
 	destroy_antfarm(antfarm);
 }
 
+void	create_room_array(t_lemin	*a)
+{
+	int	i;
+	int	j;
+	int	flag;
+	char **room;
 
+	a->rooms = ft_memalloc((a->ic.room + 1) * sizeof(t_room *));
+	i = 0;
+	j = 0;
+	while (i < a->lines)
+	{
+		if (a->input_type[i] == LEM_ROOM)
+		{
+			flag = 0;
+			if (i > 0)
+			{
+				if (a->input_type[i - 1] == LEM_START)
+					flag = LEM_START;
+				if (a->input_type[i - 1] == LEM_END)
+					flag = LEM_END;
+			}
+			room = ft_strsplit(a->string_array[i], ' ');
+			a->rooms[j] = create_room(room[0], ft_atoi(room[1]), ft_atoi(room[2]), flag);
+			a->rooms[j]->strings = room;
+		}
+		i++;
+	}
+	a->rooms[j] = NULL;
+}
+
+void	create_room_links(t_lemin *a)
+{
+	int	i;
+	char	**link;
+
+	i = 0;
+	while (i < a->lines)
+	{
+		if (a->input_type[i] == LEM_LINK)
+		{
+			link = ft_strsplit(a->string_array[i], ' ');
+
+
+			free_char_array(link);
+
+		}
+	}
+}
 
 //
-//implement room name validation for links
-//check for duplicate room names
-//check for duplicate links?
-//throw error when room name has dashes?
+//implement room name validation for links	-DONE
+//check for duplicate room names			-DONE
+//check for duplicate links?				-maybe not
+//throw error when room name has dashes?	-DONE
 //
 	
 
@@ -745,9 +350,16 @@ char	*e_malloc	= "error: malloc failed\n";
 
 int	main(int ac, char **av)
 {
+	t_lemin	*a;
+
+	a = ft_memalloc(sizeof(t_lemin));
+	if (a == NULL)
+		return (ft_printf("ERROR\n"));
 	if ((ac == 2) && (ft_strequ(av[1], "-v")))
-		g_verbose = 1;
-	get_input();
+		a->verbose = 1;
+	get_input(a);
+	check_duplicate_room_names(a);
+	create_room_array(a);
 	test1();
 	return (0);
 }
