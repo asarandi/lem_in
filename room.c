@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:36:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 01:05:38 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 02:17:46 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,10 +96,53 @@ void	room_not_found(t_lemin *a, char *linkname)
 	if (a->verbose)
 	{
 		ft_printf("{red}ERROR: error while creating links map{eoc}\n");
-		ft_printf("{red}room name '%s' not found{eoc}\n");
+		ft_printf("{red}room name '%s' not found{eoc}\n", linkname);
 	}
 	else
 		ft_printf("ERROR\n");
+}
+
+
+int	room_has_duplicate_link(t_room *room1, t_room *room2) 
+{
+	int			i;
+	int			j;
+
+	if ((room1->links == NULL) || (room2->links == NULL))
+		return (0);
+	i = 0;
+	while (room1->links[i] != NULL)
+	{
+		if (room1->links[i] == room2)
+			return (1);
+		i++;
+	}
+	i = 0;
+	while (room2->links[i] != NULL)
+	{
+		if (room2->links[i] == room1)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+int	room_check_for_duplicates(t_lemin *a, t_room *room1, t_room *room2)
+{
+	if (room_has_duplicate_link(room1, room2) == 1)
+	{
+		if (a->verbose)
+		{
+			ft_printf("{red}ERROR: map error - duplicate links{eoc}\n");
+			ft_printf("{red}room %s links to room %s multiple times{eoc}\n", room1->name, room2->name);
+		}
+		else
+			ft_printf("ERROR\n");
+
+		return (1);
+
+	}
+	return (0);
 }
 
 int	add_link(t_lemin *a, char *linkname1, char *linkname2)
@@ -119,6 +162,8 @@ int	add_link(t_lemin *a, char *linkname1, char *linkname2)
 		room_not_found(a, linkname2);
 		return (-1);
 	}
+	if (room_check_for_duplicates(a, room1, room2) == 1)
+		return (-1);
 	if (add_room(&room1->links, room2) == -1)	//add room2 to the list of links of room1
 		return (-1);
 	return (add_room(&room2->links, room1));	//add room1 to the list of links for room2

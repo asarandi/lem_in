@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 01:17:30 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 02:18:45 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,7 +302,7 @@ void	create_link_array(t_lemin *a)
 //
 //implement room name validation for links	-DONE
 //check for duplicate room names			-DONE
-//check for duplicate links?				-maybe not
+//check for duplicate links?				-DONE
 //throw error when room name has dashes?	-DONE
 //
 	
