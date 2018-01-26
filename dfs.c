@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:35:11 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:47:43 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 02:29:00 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	dfs_find_end(t_room *room, int *distance, int tmp, t_room **closest)
 	int		i;
 	int		temp;
 
-	if (room->is_end == 1)
+	if (room->special == LEM_END)
 	{
 		if (tmp < *distance)
 			*distance = tmp;
@@ -49,7 +49,7 @@ int		distance_to_end(t_room **antfarm, t_room *room)
 	t_room	*closest;
 
 	closest = NULL;
-	clear_room_flags(antfarm);
+//	clear_room_flags(antfarm);
 	distance = count_rooms(antfarm);
 	if ((dfs_find_end(room, &distance, 0, &closest)) == 1)
 	{

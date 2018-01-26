@@ -6,13 +6,13 @@
 #    By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/04 00:51:51 by asarandi          #+#    #+#              #
-#    Updated: 2018/01/04 01:01:04 by asarandi         ###   ########.fr        #
+#    Updated: 2018/01/26 01:09:52 by asarandi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	= lem-in
 CC		= gcc
-CFLAGS	= -Wall -Werror -Wextra
+CFLAGS	= -Wall -Werror -Wextra -Ofast
 DFLAGS	= -g
 SRC		= $(wildcard *.c)
 OBJ		= $(SRC:%.c=%.o)

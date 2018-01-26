@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/04 00:43:31 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 00:58:51 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 02:43:12 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,11 @@ typedef struct	s_room
 	int		y;
 	int		has_ant;
 	int		ant;
-	int		is_start;
-	int		is_end;
+	int		special;
 	int		visited;
+	int		depth;
+	struct s_room	*parent;
+	struct s_room	*child;
 	struct s_room	*next;
 	struct s_room	**links;
 }				t_room;
@@ -62,6 +64,7 @@ struct	input_counts
 
 typedef	struct	s_lemin
 {
+	struct	s_room			**paths;
 	struct	s_room			**rooms;
 	struct	s_ant			**ants;
 	struct	input_counts	ic;
@@ -71,8 +74,20 @@ typedef	struct	s_lemin
 	int						lines;
 	int						*input_type;
 	int						verbose;
+	int						shortest;
+	int						number_of_ants;
+	t_room					*start;
+	t_room					*end;
 }				t_lemin;
 
+
+void	bfs_is_map_valid(t_lemin *a);
+void	bfs_enqueue(t_room *root, t_room *next);
+void	bfs_dequeue(t_room **root);
+int		bfs_has_unvisited(t_room *room);
+int		bfs_is_enqueued(t_room *queue, t_room *search);
+t_room	*bfs_closest(t_lemin *a, t_room *queue, t_room *search);
+t_room *bfs_next(t_lemin *a, t_room *start);
 
 char	*stdin_read_eof(int *count);
 int		bfs_has_unvisited(t_room *room);
@@ -97,7 +112,7 @@ void	bfs_enqueue(t_room *root, t_room *next);
 void	check_duplicate_room_names(t_lemin *a);
 void	check_input_counts(t_lemin *a, int i);
 void	clear_input_counts(t_lemin *a);
-void	clear_room_flags(t_room **antfarm);
+void	clear_room_flags(t_lemin *a);
 void	compare_room_names(t_lemin *a, int i, int j);
 void	create_room_array(t_lemin	*a);
 void	create_room_links(t_lemin *a);

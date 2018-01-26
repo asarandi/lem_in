@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:42:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:43:21 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 03:20:26 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int		ft_istrcmp(char *str1, char *str2)	//case insensitive compare
 	if ((str1 != NULL) && (str2 == NULL))
 		return (str1[0]);
 	i = 0;
-	while (str1[i])
+	while ((str1[i]) || (str2[i]))
 	{
 		a = str1[i];
 		if ((a >= 'A') && (a <= 'Z'))

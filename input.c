@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:41:20 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:42:20 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 22:38:36 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int		get_input_type(char *str)
 	int		result;
 
 	result = LEM_UNKNOWN;
-	if ((array = ft_strsplit(str, ' ')) == NULL)
+	if (((array = ft_strsplit(str, ' ')) == NULL) || (array[0] == NULL))
 		return (LEM_UNKNOWN);
 
 

@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:36:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 02:17:46 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/25 03:04:17 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,10 @@ t_room	*create_room(char *name, int x, int y, int special)
 	room->y = y;
 	room->has_ant = 0;
 	room->ant = 0;
-	room->is_start = 0;
-	room->is_end = 0;
 	room->visited = 0;
-	room->next = NULL;
-	if (special == LEM_START)
-		room->is_start = 1;
-	if (special == LEM_END)
-		room->is_end = 1;
+	room->child = NULL;
+	room->parent = NULL;
+	room->special = special;
 	room->links = NULL;
 	return (room);
 }
@@ -106,7 +102,6 @@ void	room_not_found(t_lemin *a, char *linkname)
 int	room_has_duplicate_link(t_room *room1, t_room *room2) 
 {
 	int			i;
-	int			j;
 
 	if ((room1->links == NULL) || (room2->links == NULL))
 		return (0);

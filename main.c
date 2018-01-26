@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 02:18:45 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 03:42:38 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,16 +38,22 @@ int	ant_can_move(t_ant *ant)
 }
 
 
-void	clear_room_flags(t_room **antfarm)
+void	clear_room_flags(t_lemin *a)
 {
 	int	i;
+	t_room **antfarm;
 
+	a->start->has_ant = 0;
+	a->end->has_ant = 0;
+
+	antfarm = a->rooms;
 	if (antfarm == NULL)
 		return ;
 	i = 0;
 	while (antfarm[i] != NULL)
 	{
-		antfarm[i]->next = NULL;
+		antfarm[i]->parent = NULL;
+		antfarm[i]->child = NULL;
 		antfarm[i]->visited = 0;
 		i++;
 	}
@@ -81,7 +87,7 @@ void	print_antfarm(t_room **antfarm)
 	{
 		ft_printf("name: [%s],\tx: [%d], \ty: [%d]\t", antfarm[i]->name, antfarm[i]->x, antfarm[i]->y);
 		ft_printf("has_ant: [%d],\tant: [%d],\t", antfarm[i]->has_ant, antfarm[i]->ant);
-		ft_printf("is_start: [%d],\tis_end: [%d]\n", antfarm[i]->is_start, antfarm[i]->is_end);
+		ft_printf("\tspecial: [%d]\n", antfarm[i]->special);
 		links = antfarm[i]->links;
 		if (links != NULL)
 		{
@@ -299,13 +305,163 @@ void	create_link_array(t_lemin *a)
 	}
 }
 
+void	fatal_error(t_lemin *a, char *msg)
+{
+	if ((a->verbose) && (msg != NULL))
+		ft_printf("{red}ERROR: %s{eoc}\n", msg);
+	else
+		ft_printf("ERROR\n");
+	destroy_antfarm(a);
+	exit(0);
+}
+
+void	create_ant_array(t_lemin *a)
+{
+	int		i;
+
+	i = 0;
+	a->number_of_ants = 0;
+	while (i < a->lines)
+	{
+		if (a->input_type[i] == LEM_ANTS)
+		{
+			a->number_of_ants = ft_atoi(a->string_array[i]);
+			break ;
+		}
+		i++;
+	}
+	if ((a->number_of_ants < 1) || (a->number_of_ants >= INT_MAX))
+		fatal_error(a, "map error - bad number of ants");
+	a->ants = ft_memalloc((a->number_of_ants + 1) * sizeof(t_ant *));
+	if (a->ants == NULL)
+		fatal_error(a, "malloc failed");
+	i = 0;
+	while (i < a->number_of_ants)
+	{
+		a->ants[i] = ft_memalloc(sizeof(t_ant));
+		if (a->ants[i] == NULL)
+			fatal_error(a, "malloc failed");
+		a->ants[i]->room = a->start;
+		i++;
+	}
+	return ;
+}
+
+
+
+void	play(t_lemin *a)
+{
+	int		i;
+	int		flag;
+	t_room	*next;
+
+	while (1)
+	{
+		i = 0;
+		flag = 0;
+		while (a->ants[i] != NULL)
+		{
+			if (a->ants[i]->room != a->end)
+			{
+				flag = 1;
+
+				next = bfs_next(a, a->ants[i]->room);
+				if ((next != NULL) && ((next->has_ant == 0) || next == a->end))
+				{
+					a->ants[i]->room->has_ant = 0;
+					ft_printf("L%d-%s ", i + 1, next->name);
+					a->ants[i]->room = next;
+					a->ants[i]->room->has_ant = 1;
+				}
+//				else
+//				{
+//					ft_printf("for ant %d .. next is NULL\n", i + 1);
+//					flag = 1;
+//					break ;
+//				}
+			}
+			i++;
+		}
+		ft_printf("\n");
+		if (flag == 0)
+			break ;
+	}
+}
+
+
+
+
+
+void	play2(t_lemin *a)
+{
+	int		i;
+	int		j;
+	int		f;
+
+	while (1)
+	{
+		j = 0;
+		i = 0;
+		f = 0;
+		while (a->ants[i] != NULL)
+		{
+			a->end->has_ant = 0;
+
+			if (a->ants[i]->room != a->end)
+			{
+				f = 1;
+				if (a->ants[i]->room == a->start)
+				{
+					while (a->paths[j]->has_ant == 1)
+						j++;
+					if (a->paths[j] == NULL)
+						break ;
+					a->ants[i]->room = a->paths[j++];
+					a->ants[i]->room->has_ant = 1;
+					ft_printf("L%d-%s ", i + 1, a->ants[i]->room->name);
+					if (a->paths[j] == NULL)
+					{
+						i = 0;
+						j = 0;
+						ft_printf("\n");
+						continue ;
+					}
+
+				}
+				else
+				{
+					if (a->ants[i]->room->next->has_ant == 0)
+					{
+						a->ants[i]->room->has_ant = 0;
+						a->ants[i]->room = a->ants[i]->room->next;
+						a->ants[i]->room->has_ant = 1;
+						ft_printf("L%d-%s ", i + 1, a->ants[i]->room->name);
+					}
+				}
+			}
+			i++;
+		}
+		ft_printf("\n");
+		if (f == 0)
+			break ;
+	}
+
+}
+
+
+
+
+
 //
 //implement room name validation for links	-DONE
 //check for duplicate room names			-DONE
 //check for duplicate links?				-DONE
 //throw error when room name has dashes?	-DONE
 //
-	
+
+void	bfs_display_shortest_path(t_lemin *a);
+void	bfs_is_map_valid(t_lemin *a);
+void	bfs_generate_paths(t_lemin *a);
 
 char	*e_noinput	= "error: no input file\n";
 char	*e_badsize	= "errpr: bad file size\n";
@@ -324,9 +480,15 @@ int	main(int ac, char **av)
 	check_duplicate_room_names(a);
 	create_room_array(a);
 	create_link_array(a);
-	print_antfarm(a->rooms);
+	bfs_is_map_valid(a);
+	create_ant_array(a);
+//	ft_printf("%s\n", a->raw_input);
+//	bfs_display_shortest_path(a);
+	bfs_generate_paths(a);
+	play2(a);
+	
+
 	destroy_antfarm(a);
 
-//	test1();
 	return (0);
 }
