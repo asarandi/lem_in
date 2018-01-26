@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:36:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 03:04:17 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 14:35:07 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ t_room	*find_room(t_room **antfarm, char *roomname)
 
 
 
-void	room_not_found(t_lemin *a, char *linkname)
+int	room_not_found(t_lemin *a, char *linkname)
 {
 	if (a->verbose)
 	{
@@ -96,6 +96,7 @@ void	room_not_found(t_lemin *a, char *linkname)
 	}
 	else
 		ft_printf("ERROR\n");
+	return (-1);
 }
 
 
@@ -144,21 +145,17 @@ int	add_link(t_lemin *a, char *linkname1, char *linkname2)
 {
 	t_room	*room1;
 	t_room	*room2;
+	int		is_dupe;
 
 	room1 = find_room(a->rooms, linkname1);
 	if (room1 == NULL)
-	{
-		room_not_found(a, linkname1);
-		return (-1);
-	}
+		return (room_not_found(a, linkname1));
 	room2 = find_room(a->rooms, linkname2);
 	if (room2 == NULL)
-	{
-		room_not_found(a, linkname2);
-		return (-1);
-	}
-	if (room_check_for_duplicates(a, room1, room2) == 1)
-		return (-1);
+		return (room_not_found(a, linkname2));
+	is_dupe = room_check_for_duplicates(a, room1, room2);
+	if (is_dupe == 1)
+		return (a->ignore == 1 ? 1 : -1);
 	if (add_room(&room1->links, room2) == -1)	//add room2 to the list of links of room1
 		return (-1);
 	return (add_room(&room2->links, room1));	//add room1 to the list of links for room2

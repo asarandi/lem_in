@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 03:42:38 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 14:27:15 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -417,7 +417,8 @@ void	play2(t_lemin *a)
 					if (a->paths[j] == NULL)
 						break ;
 					a->ants[i]->room = a->paths[j++];
-					a->ants[i]->room->has_ant = 1;
+					if (a->ants[i]->room != a->end)
+						a->ants[i]->room->has_ant = 1;
 					ft_printf("L%d-%s ", i + 1, a->ants[i]->room->name);
 					if (a->paths[j] == NULL)
 					{
@@ -434,7 +435,8 @@ void	play2(t_lemin *a)
 					{
 						a->ants[i]->room->has_ant = 0;
 						a->ants[i]->room = a->ants[i]->room->next;
-						a->ants[i]->room->has_ant = 1;
+						if (a->ants[i]->room != a->end)
+							a->ants[i]->room->has_ant = 1;
 						ft_printf("L%d-%s ", i + 1, a->ants[i]->room->name);
 					}
 				}
@@ -467,6 +469,22 @@ char	*e_noinput	= "error: no input file\n";
 char	*e_badsize	= "errpr: bad file size\n";
 char	*e_malloc	= "error: malloc failed\n";
 
+
+void cmd_line_opt(int ac, char **av, t_lemin *a)
+{
+	int	i;
+
+	i = 1;
+	while (i < ac)
+	{
+		if (ft_strequ(av[i], "-v"))
+			a->verbose = 1;
+		else if  (ft_strequ(av[i], "-i"))
+			a->ignore = 1;
+		i++;
+	}
+}
+
 int	main(int ac, char **av)
 {
 	t_lemin	*a;
@@ -474,8 +492,7 @@ int	main(int ac, char **av)
 	a = ft_memalloc(sizeof(t_lemin));
 	if (a == NULL)
 		return (ft_printf("ERROR\n"));
-	if ((ac == 2) && (ft_strequ(av[1], "-v")))
-		a->verbose = 1;
+	cmd_line_opt(ac, av, a);
 	get_input(a);
 	check_duplicate_room_names(a);
 	create_room_array(a);
@@ -483,7 +500,7 @@ int	main(int ac, char **av)
 	bfs_is_map_valid(a);
 	create_ant_array(a);
 //	ft_printf("%s\n", a->raw_input);
-//	bfs_display_shortest_path(a);
+	bfs_display_shortest_path(a);
 	bfs_generate_paths(a);
 	play2(a);
 	

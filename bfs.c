@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:33:34 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 03:39:10 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 13:41:11 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,11 +148,13 @@ int	bfs_count_paths(t_lemin *a)
 		solution = bfs_closest(a, a->start, a->end);
 		if (solution == NULL)
 			break ;
+		if (solution->depth == 1)
+			return (1);
 		while (solution->parent != NULL)
 		{
-			solution->has_ant = 1;
+			if ((solution != a->end) && (solution != a->start))
+				solution->has_ant = 1;
 			solution = solution->parent;
-	
 		}
 		i++;
 	}
@@ -176,20 +178,17 @@ void	bfs_generate_paths(t_lemin *a)
 
 	count = bfs_count_paths(a);
 	a->paths = ft_memalloc((count + 1) * sizeof(t_room *));
-	while (1)
+	while (i < count)
 	{
 		solution = bfs_closest(a, a->start, a->end);
-		if (solution == NULL)
-			break ;
 		ft_printf("path %d, depth is %d\n", i, solution->depth);
 		while (solution->parent != NULL)
 		{
 			solution->parent->next = solution;
 			ft_printf("node name: %s \n", solution->name);
-	//		if ((solution != a->start) && (solution != a->end))
-			solution->has_ant = 1;
+			if ((solution != a->end) && (solution != a->start))
+				solution->has_ant = 1;
 			solution = solution->parent;
-	
 		}
 		a->paths[i] = solution->next;
 		i++;

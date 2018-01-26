@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/04 00:43:31 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 02:43:12 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 14:26:28 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ typedef	struct	s_lemin
 	int						lines;
 	int						*input_type;
 	int						verbose;
+	int						ignore;
 	int						shortest;
 	int						number_of_ants;
 	t_room					*start;

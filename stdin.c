@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:40:15 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/24 23:40:28 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 14:17:33 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ char	*stdin_read_eof(int *count)
 		if ((r = read(0, &buffer[*count], 1024 - (*count % 1024))) == -1)
 			stdin_quit(buffer);
 		*count += r;
-		if ((*count) && (*count % 1024 == 0))
+		if ((*count) && (*count % 1024 == 0) && (r != 0))
 		{
 			if ((newbuf = ft_memalloc(*count + 1024)) == NULL)
 				stdin_quit(buffer);
