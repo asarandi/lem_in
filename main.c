@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 14:27:15 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 16:28:13 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -500,8 +500,10 @@ int	main(int ac, char **av)
 	bfs_is_map_valid(a);
 	create_ant_array(a);
 //	ft_printf("%s\n", a->raw_input);
-	bfs_display_shortest_path(a);
+	bfs_is_map_valid(a);
 	bfs_generate_paths(a);
+	bfs_display_shortest_path(a);
+
 	play2(a);
 	
 

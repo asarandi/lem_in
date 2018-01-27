@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:33:34 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 13:41:11 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 16:32:32 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,8 +96,7 @@ t_room	*bfs_closest(t_lemin *a, t_room *queue, t_room *search)
 		{
 			if (queue->links[i]->visited == 0)
 			{
-//				if ((can_make_move(start, queue)) && (queue->depth < a->shortest))
-				if	(queue->links[i]->has_ant == 0) //|| (queue->links[i] == search))
+				if	(queue->links[i]->has_ant == 0)
 				{
 					if (bfs_is_enqueued(queue, queue->links[i]) == 0)
 						bfs_enqueue(queue, queue->links[i]);
@@ -115,31 +114,50 @@ t_room	*bfs_closest(t_lemin *a, t_room *queue, t_room *search)
 
 void	bfs_display_shortest_path(t_lemin *a)
 {
-	t_room	*end;
+	int		i;
+	t_room	*room;
 
 	if (a->verbose)
 	{
-		end = bfs_closest(a, a->start, a->end);
-		a->shortest = end->depth;
-
-		ft_printf("{green}shortest path backtacking:{eoc}\n");
-		while (end->parent != NULL)
+		i = 0;
+		while (a->paths[i] != NULL)
 		{
-			ft_printf("{green}%s -> ", end->name);
-			end = end->parent;
+			ft_printf("{green}path #%d:{eoc}\n", i + 1);
+			ft_printf("{green}%s {eoc} -> ", a->start->name);
+			room = a->paths[i];
+			while (room != NULL)
+			{
+				ft_printf("{green}%s{eoc} ", room->name);
+				if (room != a-> end)
+					ft_printf("-> ");
+				room = room->next;
+			}
+			ft_printf("\n");
+			i++;
 		}
-			ft_printf("%s{eoc}\n\n", end->name);
+		ft_printf("\n");
 	}
-
 }
 
+
+void	clear_all_rooms_of_ants(t_lemin *a)
+{
+	int	i;
+
+	i = 0;
+	while (a->rooms[i] != NULL)
+	{
+		a->rooms[i]->has_ant = 0;
+		i++;
+	}
+	return ;
+}
 
 
 
 int	bfs_count_paths(t_lemin *a)
 {
 	int	i;
-	int j;
 
 	i = 0;
 	t_room	*solution;
@@ -158,12 +176,7 @@ int	bfs_count_paths(t_lemin *a)
 		}
 		i++;
 	}
-	j = 0;
-	while (a->rooms[j] != NULL)
-	{
-		a->rooms[j]->has_ant = 0;
-		j++;
-	}
+	clear_all_rooms_of_ants(a);
 	return (i);
 }
 
@@ -171,21 +184,18 @@ int	bfs_count_paths(t_lemin *a)
 void	bfs_generate_paths(t_lemin *a)
 {
 	int	i;
-
-	i = 0;
 	t_room	*solution;
 	int count;
 
 	count = bfs_count_paths(a);
 	a->paths = ft_memalloc((count + 1) * sizeof(t_room *));
+	i = 0;
 	while (i < count)
 	{
 		solution = bfs_closest(a, a->start, a->end);
-		ft_printf("path %d, depth is %d\n", i, solution->depth);
 		while (solution->parent != NULL)
 		{
 			solution->parent->next = solution;
-			ft_printf("node name: %s \n", solution->name);
 			if ((solution != a->end) && (solution != a->start))
 				solution->has_ant = 1;
 			solution = solution->parent;
@@ -194,15 +204,7 @@ void	bfs_generate_paths(t_lemin *a)
 		i++;
 	}
 	a->paths[i] = NULL;
-	i = 0;
-	while (a->rooms[i] != NULL)
-	{
-		a->rooms[i]->has_ant = 0;
-		i++;
-	}
-
-
-
+	clear_all_rooms_of_ants(a);
 }
 
 void	bfs_is_map_valid(t_lemin *a)
