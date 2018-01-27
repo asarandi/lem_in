@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:36:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 14:35:07 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 17:11:04 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,28 +161,46 @@ int	add_link(t_lemin *a, char *linkname1, char *linkname2)
 	return (add_room(&room2->links, room1));	//add room1 to the list of links for room2
 }
 
-void	destroy_antfarm(t_lemin *a)
+
+
+void	free_ants(t_lemin *a)
 {
-	int		i;
+	int	i;
 
 	i = 0;
-	if (a->ants != NULL)
-		while (a->ants[i] != NULL)
-		{
-			free(a->ants[i]);
-			i++;
-		}
+	while (a->ants[i] != NULL)
+	{
+		free(a->ants[i]);
+		i++;
+	}
+	return ;
+}
+
+void	free_rooms(t_lemin *a)
+{
+	int	i;
+
 	i = 0;
+	while (a->rooms[i] != NULL)
+	{
+		if (a->rooms[i]->strings != NULL)
+			free_char_array(a->rooms[i]->strings);
+		free(a->rooms[i]->links);
+		free(a->rooms[i]);
+		a->rooms[i] = NULL;
+		i++;
+	}
+	return ;
+}
+
+void	destroy_antfarm(t_lemin *a)
+{
+	if (a->ants != NULL)
+		free_ants(a);
 	if (a->rooms != NULL)
-		while (a->rooms[i] != NULL)
-		{
-			if (a->rooms[i]->strings != NULL)
-				free_char_array(a->rooms[i]->strings);
-			free(a->rooms[i]->links);
-			free(a->rooms[i]);
-			a->rooms[i] = NULL;
-			i++;
-		}
+		free_rooms(a);
+	if (a->paths != NULL)
+		free(a->paths);
 	free_char_array(a->string_array);	//array of char ** from str_split
 	free(a->input_type);	// array of ints for each line of raw input
 	free(a->raw_input);

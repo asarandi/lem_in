@@ -6,13 +6,34 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:41:20 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/25 22:38:36 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 18:41:50 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lemin.h"
 
-int		get_input_type(char *str)
+void	lemin_hashtag(t_lemin *a, char *str, int *result)
+{
+		if (string_is_integer(str))
+			*result = LEM_ANTS;
+		else if (ft_strequ(str, "##start"))
+			*result = LEM_START;
+		else if (ft_strequ(str, "##end"))
+			*result = LEM_END;
+		else if ((str[0] == '#') && (str[1] == '#'))
+			*result = LEM_COMMAND;
+		else if ((str[0] == '#') && (str[1] != '#'))
+			*result = LEM_COMMENT;
+		if ((*result == LEM_COMMAND) && (ft_strequ(str, "##verbose")))
+			a->verbose = 1;
+		if ((*result == LEM_COMMAND) && (ft_strequ(str, "##ignore")))
+			a->ignore = 1;
+		if ((*result == LEM_COMMAND) && (ft_strequ(str, "##hidemap")))
+			a->hide_map = 1;
+}
+
+
+int		get_input_type(t_lemin *a, char *str)
 {
 	char	**array;
 	char	**links;
@@ -21,23 +42,12 @@ int		get_input_type(char *str)
 	result = LEM_UNKNOWN;
 	if (((array = ft_strsplit(str, ' ')) == NULL) || (array[0] == NULL))
 		return (LEM_UNKNOWN);
-
-
 	if ((array[0][0] == '#') && (array[0][1] != '#'))
-	{
-			result = LEM_COMMENT;
-	}
+		result = LEM_COMMENT;
 	else if ((char_array_count_elements(array)) == 1)
 	{
-		if (string_is_integer(array[0]))
-			result = LEM_ANTS;
-		else if (ft_strequ(array[0], "##start"))
-			result = LEM_START;
-		else if (ft_strequ(array[0], "##end"))
-			result = LEM_END;
-		else if ((array[0][0] == '#') && (array[0][1] != '#'))
-			result = LEM_COMMENT;
-		else
+		lemin_hashtag(a, array[0], &result);
+		if (result == LEM_UNKNOWN)
 		{
 			links = ft_strsplit(array[0], '-');
 			if ((char_array_count_elements(links)) == 2)
@@ -85,7 +95,7 @@ void	get_input_counts(t_lemin *a, int i)
 			a->ic.room += 1;
 		else if (a->input_type[i] == LEM_BADNAME)
 			input_error("room names should not start with 'L' or '#'", a, i);
-		else
+		else if (a->input_type[i] == LEM_UNKNOWN)
 			input_error("could not parse this line", a, i);
 		i++;
 	}

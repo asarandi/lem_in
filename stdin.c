@@ -6,11 +6,12 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:40:15 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 14:17:33 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 18:10:23 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lemin.h"
+#include <fcntl.h>
 
 void	stdin_quit(char *membuf)
 {
@@ -21,6 +22,23 @@ void	stdin_quit(char *membuf)
 	exit (0);
 }
 
+int	is_stdin_empty(char *buffer, int *count)
+{
+	ssize_t	r;
+
+
+	r = 0;
+	fcntl(0, F_SETFL, O_NONBLOCK);
+	r = read(0, &buffer[0], 1);
+	if (r == 1)
+	{
+		*count = 1;
+		return (0);
+	}
+	free(buffer);
+	return (1);
+}
+
 char	*stdin_read_eof(int *count)
 {
 	char	*buffer;
@@ -29,7 +47,8 @@ char	*stdin_read_eof(int *count)
 
 	if ((buffer = ft_memalloc(1024)) == NULL)
 		stdin_quit(NULL);
-	*count = 0;
+	if (is_stdin_empty(buffer, count))
+		return (NULL);
 	r = 1;
 	while (r != 0)
 	{

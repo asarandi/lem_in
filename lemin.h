@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/04 00:43:31 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 14:26:28 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 18:30:26 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,10 @@
 #define	LEM_COMMENT	6
 #define	LEM_UNKNOWN	7
 #define LEM_BADNAME 8
+#define LEM_IGNORE	9
+#define LEM_VERBOSE	10
+#define LEM_HIDEMAP	11
+#define	LEM_COMMAND	12
 
 typedef struct	s_room
 {
@@ -75,6 +79,7 @@ typedef	struct	s_lemin
 	int						*input_type;
 	int						verbose;
 	int						ignore;
+	int						hide_map;
 	int						shortest;
 	int						number_of_ants;
 	t_room					*start;
@@ -97,7 +102,7 @@ int		char_array_count_elements(char **array);
 int		count_rooms(t_room **antfarm);
 int		distance_to_end(t_room **antfarm, t_room *room);
 int		ft_istrcmp(char *str1, char *str2);
-int		get_input_type(char *str);
+int		get_input_type(t_lemin *a, char *str);
 int		is_direct_link(t_room *room, t_room *search);
 int		string_is_integer(char *str);
 int		add_link(t_lemin *a, char *roomname, char *linkname);

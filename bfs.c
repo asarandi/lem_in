@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/24 23:33:34 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 16:32:32 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 18:52:08 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ t_room	*bfs_closest(t_lemin *a, t_room *queue, t_room *search)
 
 	clear_room_flags(a);
 	queue->depth = 0;
-	while (queue != NULL)
+	while ((queue != NULL) && (queue->links != NULL))
 	{
 		queue->visited = 1;
 		i = 0;
@@ -122,8 +122,8 @@ void	bfs_display_shortest_path(t_lemin *a)
 		i = 0;
 		while (a->paths[i] != NULL)
 		{
-			ft_printf("{green}path #%d:{eoc}\n", i + 1);
-			ft_printf("{green}%s {eoc} -> ", a->start->name);
+			ft_printf("{green2}path #%d:{eoc}\t", i + 1);
+			ft_printf("{green}%s{eoc} -> ", a->start->name);
 			room = a->paths[i];
 			while (room != NULL)
 			{

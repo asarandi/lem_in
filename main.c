@@ -6,37 +6,11 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 16:28:13 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/26 18:57:23 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lemin.h"
-
-
-int	ant_can_move(t_ant *ant)
-{
-	int	i;
-	t_room	**links;
-
-	if (ant == NULL)
-		return (-1);
-	if (ant->room == NULL)
-		return (-2);
-	if (ant->room->links == NULL)
-		return (-3);
-	if (ant->room->links[0] == NULL)
-		return (-4);
-	links = ant->room->links;
-	i = 0;
-	while (links[i] != NULL)
-	{
-		if (links[i]->has_ant == 0)
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
 
 void	clear_room_flags(t_lemin *a)
 {
@@ -59,57 +33,6 @@ void	clear_room_flags(t_lemin *a)
 	}
 }
 
-int		is_direct_link(t_room *room, t_room *search)
-{
-	int	i;
-
-	i = 0;
-	while (room->links[i] != NULL)
-	{
-		if (room->links[i] == search)
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-
-void	print_antfarm(t_room **antfarm)
-{
-	int i;
-	int	j;
-	t_room	**links;
-
-	if (antfarm == NULL)
-		return ;
-	i = 0;
-	while (antfarm[i] != NULL)
-	{
-		ft_printf("name: [%s],\tx: [%d], \ty: [%d]\t", antfarm[i]->name, antfarm[i]->x, antfarm[i]->y);
-		ft_printf("has_ant: [%d],\tant: [%d],\t", antfarm[i]->has_ant, antfarm[i]->ant);
-		ft_printf("\tspecial: [%d]\n", antfarm[i]->special);
-		links = antfarm[i]->links;
-		if (links != NULL)
-		{
-			j = 0;
-			while (links[j] != NULL)
-			{
-				ft_printf("\tlink %d:\t [%s]\n", j, links[j]->name);
-				j++;
-			}
-			ft_printf("\n");
-		}
-
-
-		i++;
-	}
-}
-
-
-
-
-
-
 void	input_error(char *message, t_lemin *a, int index)
 {
 	if (a->verbose)
@@ -119,32 +42,35 @@ void	input_error(char *message, t_lemin *a, int index)
 	}
 	else
 		ft_printf("ERROR\n");
-	free_char_array(a->string_array);	//array of char ** from str_split
+	free_char_array(a->string_array);
 	free(a->input_type);	// array of ints for each line of raw input
 	free(a->raw_input);
 	exit(0);
 	return ;
 }
 
-
+void	display_usage(t_lemin *a);
 
 void	get_input(t_lemin *a)
 {
 	int i;
 
 	a->raw_input = stdin_read_eof(&a->raw_size);
+	if (a->raw_input == NULL)
+		display_usage(a);
 	a->string_array = ft_strsplit(a->raw_input, '\n');
+	if (a->string_array == NULL)
+		display_usage(a);
 	a->lines = char_array_count_elements(a->string_array);
 	a->input_type = ft_memalloc((a->lines + 1) * sizeof(int));
-
 	i = 0;
 	while (a->string_array[i] != NULL)
 	{
-		a->input_type[i] = get_input_type(a->string_array[i]);
+		a->input_type[i] = get_input_type(a, a->string_array[i]);
 		i++;
 	}
 	i = 0;
-	clear_input_counts(a);	// use ft_memalloc because it sets memory to 0
+	clear_input_counts(a);
 	get_input_counts(a, i);
 	check_input_counts(a, i);
 }
@@ -180,7 +106,8 @@ void	compare_room_names(t_lemin *a, int i, int j)
 	if (ft_istrequ(room1[0], room2[0]) == 1)
 	{
 		result = 1;
-		ft_printf("{white2}line %d: %s{eoc}\n", i, a->string_array[i]);
+		if (a->verbose)
+			ft_printf("{white2}line %d: %s{eoc}\n", i, a->string_array[i]);
 	}
 	free_char_array(room1);
 	free_char_array(room2);
@@ -212,38 +139,6 @@ void	check_duplicate_room_names(t_lemin *a)
 		}
 		i++;
 	}
-}
-
-
-void	test1(void)
-{
-	t_room	*a;
-	t_room	*b;
-	t_room	*c;
-	t_room	*d;
-	t_room	**antfarm;
-
-	antfarm = NULL;
-//pdf example 2
-	a = create_room("0", 1, 2, LEM_START);	add_room(&antfarm, a);
-	b = create_room("1", 9, 2, LEM_END);	add_room(&antfarm, b);
-	c = create_room("2", 5, 0, 0);			add_room(&antfarm, c);
-	d = create_room("3", 5, 4, 0);			add_room(&antfarm, d);
-
-//	add_link(&antfarm, "0", "2");	add_link(&antfarm, "2", "0");
-//	add_link(&antfarm, "0", "3");	add_link(&antfarm, "3", "0");
-//	add_link(&antfarm, "2", "1");	add_link(&antfarm, "1", "2");
-//	add_link(&antfarm, "3", "1");	add_link(&antfarm, "1", "3");
-//	add_link(&antfarm, "2", "3");	add_link(&antfarm, "3", "2");
-
-
-//	int tmp = distance_to_end(antfarm, a);
-
-//	t_room *next = bfs_next(antfarm, a);
-
-
-	print_antfarm(antfarm);
-//	destroy_antfarm(antfarm);
 }
 
 void	create_room_array(t_lemin	*a)
@@ -347,52 +242,7 @@ void	create_ant_array(t_lemin *a)
 	return ;
 }
 
-
-
-void	play(t_lemin *a)
-{
-	int		i;
-	int		flag;
-	t_room	*next;
-
-	while (1)
-	{
-		i = 0;
-		flag = 0;
-		while (a->ants[i] != NULL)
-		{
-			if (a->ants[i]->room != a->end)
-			{
-				flag = 1;
-
-				next = bfs_next(a, a->ants[i]->room);
-				if ((next != NULL) && ((next->has_ant == 0) || next == a->end))
-				{
-					a->ants[i]->room->has_ant = 0;
-					ft_printf("L%d-%s ", i + 1, next->name);
-					a->ants[i]->room = next;
-					a->ants[i]->room->has_ant = 1;
-				}
-//				else
-//				{
-//					ft_printf("for ant %d .. next is NULL\n", i + 1);
-//					flag = 1;
-//					break ;
-//				}
-			}
-			i++;
-		}
-		ft_printf("\n");
-		if (flag == 0)
-			break ;
-	}
-}
-
-
-
-
-
-void	play2(t_lemin *a)
+void	display_result(t_lemin *a)
 {
 	int		i;
 	int		j;
@@ -443,31 +293,32 @@ void	play2(t_lemin *a)
 			}
 			i++;
 		}
-		ft_printf("\n");
-		if (f == 0)
+		if (f)
+			ft_printf("\n");
+		else
 			break ;
 	}
 
 }
 
-
-
-
-
-//
-//implement room name validation for links	-DONE
-//check for duplicate room names			-DONE
-//check for duplicate links?				-DONE
-//throw error when room name has dashes?	-DONE
-//
-
 void	bfs_display_shortest_path(t_lemin *a);
 void	bfs_is_map_valid(t_lemin *a);
 void	bfs_generate_paths(t_lemin *a);
 
-char	*e_noinput	= "error: no input file\n";
-char	*e_badsize	= "errpr: bad file size\n";
-char	*e_malloc	= "error: malloc failed\n";
+
+void	display_usage(t_lemin *a)
+{
+	ft_printf("usage: ./lem-in [options] < [file]\n\n");
+	ft_printf("options:\n");
+	ft_printf("\t-m: do not display map when outputting result (##hidemap)\n");
+	ft_printf("\t-i: do not quit when duplicate links found (##ignore)\n");
+	ft_printf("\t-v: display paths found and verbose error messages (##verbose)\n");
+/*
+** 	ft_printf("\t-h: show this help message and quit\n");
+*/
+	destroy_antfarm(a);
+	exit (0);
+}
 
 
 void cmd_line_opt(int ac, char **av, t_lemin *a)
@@ -481,6 +332,10 @@ void cmd_line_opt(int ac, char **av, t_lemin *a)
 			a->verbose = 1;
 		else if  (ft_strequ(av[i], "-i"))
 			a->ignore = 1;
+		else if (ft_strequ(av[i], "-m"))
+			a->hide_map = 1;
+		else
+			display_usage(a);
 		i++;
 	}
 }
@@ -499,15 +354,12 @@ int	main(int ac, char **av)
 	create_link_array(a);
 	bfs_is_map_valid(a);
 	create_ant_array(a);
-//	ft_printf("%s\n", a->raw_input);
 	bfs_is_map_valid(a);
+	if (a->hide_map == 0)
+		ft_printf("%s\n", a->raw_input);
 	bfs_generate_paths(a);
 	bfs_display_shortest_path(a);
-
-	play2(a);
-	
-
+	display_result(a);
 	destroy_antfarm(a);
-
 	return (0);
 }
