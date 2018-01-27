@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/03 21:54:37 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 22:03:19 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/27 04:55:17 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ int	main(int ac, char **av)
 	create_link_array(a);
 	bfs_is_map_valid(a);
 	create_ant_array(a);
-	bfs_is_map_valid(a);
 	if (a->hide_map == 0)
 		ft_printf("%s\n", a->raw_input);
 	bfs_generate_paths(a);
