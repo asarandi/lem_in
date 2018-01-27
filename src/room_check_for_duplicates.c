@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 22:26:29 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/26 23:07:34 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/27 05:21:39 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	room_check_for_duplicates(t_lemin *a, t_room *room1, t_room *room2)
 			ft_printf("{red}room %s links to {eoc} ", room1->name);
 			ft_printf("{red}room %s multiple times{eoc}\n", room2->name);
 		}
-		else
+		else if (a->ignore == 0)
 			ft_printf("ERROR\n");
 		return (1);
 	}
