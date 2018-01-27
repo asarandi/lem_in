@@ -83,8 +83,6 @@ int	can_make_move(t_room *start, t_room *end)
 t_room	*bfs_closest(t_lemin *a, t_room *queue, t_room *search)
 {
 	int		i;
-	t_room	*start;
-	start = queue;
 
 	clear_room_flags(a);
 	queue->depth = 0;
